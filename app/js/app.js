@@ -1,4 +1,4 @@
-var editor_version = '0.1.0';
+var editor_version = '1.0.0';
 
 var PP_MIDI_MANUF_ID_1			=	0x37;
 var PP_MIDI_MANUF_ID_2			=	0x72;

@@ -308,56 +308,11 @@
              
             </div>
 
-            
-            <!-- 
-            https://github.com/donmccurdy/input-tokenizer
-            https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
-            - https://www.w3.org/TR/DOM-Level-3-Events/#events-keyboardevents
-            - https://stackoverflow.com/a/37559790/5363794
-            https://dmauro.github.io/Keypress/
-             -->
-            <div class="row" >
-                <div class="one-half column">
-                    clicca qui e premi i tasti. nella console si vedranno i tasti premuti
-                    <input type="text" id="testInput">
-                </div>
-                <div class="one-half column">
-                    <span id="statusReport"></span>
-                </div>
-            </div>
-
             <div class="row">
-                Push Push Editor. (c) 2023 Stefano Garuti - https://github.com/garubi/push-push-editor
+                Push Push Editor. (c) 2023 Stefano Garuti - [<a href="https://github.com/garubi/push-push-editor">GitHub</a>]
             </div>
         </div>
-        <script>
-            var targArea = document.getElementById ("testInput");
-            targArea.addEventListener ('keydown',  reportKeyEvent);
 
-            function reportKeyEvent (zEvent) {
-                var keyStr = ["Control", "Shift", "Alt", "Meta"].includes(zEvent.key) ? "" : zEvent.key + " ";
-                var reportStr   =
-                    "The " +
-                    ( zEvent.ctrlKey  ? "Control " : "" ) +
-                    ( zEvent.shiftKey ? "Shift "   : "" ) +
-                    ( zEvent.altKey   ? "Alt "     : "" ) +
-                    ( zEvent.metaKey  ? "Meta "    : "" ) +
-                    keyStr + "key was pressed."
-                ;
-                // $("#statusReport").text (reportStr);
-                console.log(reportStr);
-
-                //--- Was a Ctrl-Alt-E combo pressed?
-                if (zEvent.ctrlKey  &&  zEvent.altKey  &&  zEvent.key === "e") {  // case sensitive
-                    this.hitCnt = ( this.hitCnt || 0 ) + 1;
-                    $("#statusReport").after (
-                        '<p>Bingo! cnt: ' + this.hitCnt + '</p>'
-                    );
-                }
-                zEvent.stopPropagation ();
-                zEvent.preventDefault ()
-            }
-        </script>
     </body>
 
 </html>
