@@ -3,7 +3,10 @@
     <head>
         <meta charset="utf-8">
         <title>Push Push Editor</title>
-        
+        <meta name="description" content="An editor for the Push Push device">
+        <meta name="author" content="Stefano Garuti - https://github.com/garubi/push-push-editor">
+        <meta name="copyright" content="Stefano Garuti - https://github.com/garubi/push-push-editor">
+
         <link rel="manifest" href="manifest.json">
 
         <!-- http://getskeleton.com/ -->
@@ -25,8 +28,9 @@
 
           <!-- Favicon
           –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-          <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-          <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+          <!-- <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+          <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png"> -->
+          <link rel="icon" type="image/png" sizes="192x192" href="images/192x192.png"> -->
 
 
           <script type="text/javascript" defer src="js/alpine.min.js"></script>
@@ -40,12 +44,12 @@
         <div class="container text-center" x-data="appData()" x-init="appInit()">
 
             <div class="">
-                <img src="images/android-chrome-192x192.png" alt="Push Push icon" height="80px" width="80px" />
+                <img src="images/192x192.png" alt="Push Push icon" height="80px" width="80px" />
                 
                 <h1>
                     Push Push Editor
                 </h1>
-                Editor version: <span x-text="$store.pp.editor_version"></span>
+
                 <div x-show="$store.pp.pp_got_config" x-transition>
                     Push Push connected: version <span x-text="$store.pp.pp_ver_major"></span>.<span x-text="$store.pp.pp_ver_minor"></span>.<span x-text="$store.pp.pp_ver_patch"></span>; model: <span x-text="$store.pp.pp_model_id"></span>; device: <span x-text="$store.pp.device"></span>. 
                     [<a href="" x-data @click="$store.pp.pp_got_config = false ">Disconnect</a>]
@@ -308,7 +312,7 @@
             </div>
 
             <div class="row">
-                Push Push Editor. (c) 2023 Stefano Garuti - [<a href="https://github.com/garubi/push-push-editor">GitHub</a>]
+                Push Push Editor version: <span x-text="$store.pp.editor_version"></span>. (c) 2023 Stefano Garuti - [<a href="https://github.com/garubi/push-push-editor">GitHub</a>]
             </div>
         </div>
 

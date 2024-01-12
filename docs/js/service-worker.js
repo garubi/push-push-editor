@@ -1,13 +1,17 @@
 const VERSION = "1.0.2";
 const CACHE_NAME = `PushPushEditor-${VERSION}`;
 const PRE_CACHED_RESOURCES = [
-  // "index.html", 
-  // "gcommander.min.css",
-  // "gcommander.min.js", 
-  // "iconfont/material-icons-v140-latin-regular.woff", 
-  // "iconfont/material-icons-v140-latin-regular.woff2",
-  // "img/gcommander-logotext.png",
-  // "img/gcommander-logo.png",
+  "index.html", 
+  "manifest.json",
+  "css/custom.css", 
+  "css/normalize.css", 
+  "css/skeleton.css", 
+  "images/192x192.png",
+  "images/512x512.png",
+  "images/animated-preview.gif",
+  "js/alpine.min.js",
+  "js/app.js",
+  "js/webmidi.iife.min.js",
 ];
 
 const expectedCaches = [CACHE_NAME]

@@ -1,4 +1,4 @@
-var editor_version = '1.0.2';
+var editor_version = '1.1.0beta';
 
 var PP_MIDI_MANUF_ID_1			=	0x37;
 var PP_MIDI_MANUF_ID_2			=	0x72;
@@ -20,7 +20,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.store('pp', {
         editor_version:         editor_version,
         devices:                '',
-        no_devices:             true,
+        no_devices:             false,
         device:                 '',
         pp_got_config:          false,
         pp_ver_major:           '',         
