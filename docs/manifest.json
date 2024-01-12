@@ -1,7 +1,8 @@
 {
   "name": "Push Push Editor",
   "short_name": "Push Push Editor",
-  "start_url": "/",
+  "id": ".",
+  "start_url": ".",
   "display": "standalone",
   "description": "An editor for the Push Push device",
   "lang": " en",
