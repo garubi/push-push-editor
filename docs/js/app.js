@@ -20,7 +20,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.store('pp', {
         editor_version:         editor_version,
         devices:                '',
-        no_devices:             false,
+        no_devices:             true,
         device:                 '',
         pp_got_config:          false,
         pp_ver_major:           '',         

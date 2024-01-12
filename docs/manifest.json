@@ -1,0 +1,46 @@
+{
+  "name": "Push Push Editor",
+  "short_name": "Push Push Editor",
+  "start_url": "https://garubi.github.io/push-push-editor/",
+  "display": "standalone",
+  "description": "An editor for the Push Push device",
+  "lang": " en",
+  "dir": "auto",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "images/manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "images/manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "images/animated-preview.gif",
+      "sizes": "720x450",
+      "type": "image/gif",
+      "description": "An animated preview of the editor"
+    }
+  ]
+}
