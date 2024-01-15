@@ -1,4 +1,4 @@
-const VERSION = "1.0.2";
+const VERSION = "1.1.0beta3";
 const CACHE_NAME = `PushPushEditor-${VERSION}`;
 const PRE_CACHED_RESOURCES = [
   "index.html", 
@@ -12,6 +12,14 @@ const PRE_CACHED_RESOURCES = [
   "js/alpine.min.js",
   "js/app.js",
   "js/webmidi.iife.min.js",
+  "fonts/raleway-v29-latin-300.woff2",
+  "fonts/raleway-v29-latin-300italic.woff2",
+  "fonts/raleway-v29-latin-500.woff2",
+  "fonts/raleway-v29-latin-500italic.woff2",
+  "fonts/raleway-v29-latin-600.woff2",
+  "fonts/raleway-v29-latin-600italic.woff2",
+  "fonts/raleway-v29-latin-regular.woff2",
+  "fonts/raleway-v29-latin-italic.woff2"
 ];
 
 const expectedCaches = [CACHE_NAME]
@@ -28,6 +36,7 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     cache.addAll(PRE_CACHED_RESOURCES_WITH_VERSIONS);
+    // cache.addAll(  "https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap");
   })());
 });
 
