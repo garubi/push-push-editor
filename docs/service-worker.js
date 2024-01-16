@@ -1,4 +1,4 @@
-const VERSION = "1.1.0beta3";
+const VERSION = "1.1.0beta";
 const CACHE_NAME = `PushPushEditor-${VERSION}`;
 const PRE_CACHED_RESOURCES = [
   "index.html", 
@@ -36,7 +36,6 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     cache.addAll(PRE_CACHED_RESOURCES_WITH_VERSIONS);
-    // cache.addAll(  "https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap");
   })());
 });
 
