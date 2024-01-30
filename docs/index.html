@@ -3,6 +3,12 @@
     <head>
         <meta charset="utf-8">
         <title>Push Push Editor</title>
+        <meta name="description" content="An editor for the Push Push device">
+        <meta name="author" content="Stefano Garuti - https://github.com/garubi/push-push-editor">
+        <meta name="copyright" content="Stefano Garuti - https://github.com/garubi/push-push-editor">
+
+        <link rel="manifest" href="manifest.json">
+
         <!-- http://getskeleton.com/ -->
         <!-- Mobile Specific Metas
           –––––––––––––––––––––––––––––––––––––––––––––––––– -->
@@ -10,8 +16,8 @@
 
           <!-- FONT
           –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-          <link rel="preconnect" href="https://fonts.gstatic.com">
-          <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap" rel="stylesheet">
+          <!-- <link rel="preconnect" href="https://fonts.gstatic.com">
+          <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap" rel="stylesheet"> -->
           <!-- <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css"> -->
 
           <!-- CSS
@@ -22,32 +28,28 @@
 
           <!-- Favicon
           –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-          <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
-          <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-          <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-          <link rel="shortcut icon" href="images/favicon.ico">
-          <!-- <link rel="manifest" href="images/site.webmanifest"> -->
-          <link rel="mask-icon" href="images/safari-pinned-tab.svg" color="#5bbad5">
-          <meta name="msapplication-config" content="images/browserconfig.xml">
-          <meta name="msapplication-TileColor" content="#ffc40d">
-          <meta name="theme-color" content="#ffffff">
+          <!-- <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+          <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png"> -->
+          <link rel="icon" type="image/png" sizes="192x192" href="images/192x192.png">
 
-          <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+          <script type="text/javascript" defer src="js/alpine.min.js"></script>
           <script type="text/javascript" src="js/webmidi.iife.min.js"></script>
-
           <script type="text/javascript" src="js/app.js"></script>
+
+          <script>navigator.serviceWorker.register("service-worker.js")</script> 
 
     </head>
     <body>
         <div class="container text-center" x-data="appData()" x-init="appInit()">
 
             <div class="">
-                <img src="images/android-chrome-192x192.png" alt="Push Push icon" height="80px" width="80px" />
+                <img src="images/192x192.png" alt="Push Push icon" height="80px" width="80px" />
                 
                 <h1>
                     Push Push Editor
                 </h1>
-                Editor version: <span x-text="$store.pp.editor_version"></span>
+
                 <div x-show="$store.pp.pp_got_config" x-transition>
                     Push Push connected: version <span x-text="$store.pp.pp_ver_major"></span>.<span x-text="$store.pp.pp_ver_minor"></span>.<span x-text="$store.pp.pp_ver_patch"></span>; model: <span x-text="$store.pp.pp_model_id"></span>; device: <span x-text="$store.pp.device"></span>. 
                     [<a href="" x-data @click="$store.pp.pp_got_config = false ">Disconnect</a>]
@@ -310,7 +312,7 @@
             </div>
 
             <div class="row">
-                Push Push Editor. (c) 2023 Stefano Garuti - [<a href="https://github.com/garubi/push-push-editor">GitHub</a>]
+                Push Push Editor version: <span x-text="$store.pp.editor_version"></span>. (c) 2024 Stefano Garuti - [<a href="https://github.com/garubi/push-push-editor">GitHub</a>]
             </div>
         </div>
 

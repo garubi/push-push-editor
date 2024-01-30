@@ -1,3 +1,6 @@
+# 1.1.0 (2024-01-30)
+ - Progressive Web App (PWA) version. The editor can now run completly offline and can be installed on your device from the browser address bar.
+  
 # 1.0.2 (2024-01-10)
 - better documentation
 
