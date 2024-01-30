@@ -1,4 +1,4 @@
-var editor_version = '1.1.0beta';
+var editor_version = '1.1.0';
 
 var PP_MIDI_MANUF_ID_1			=	0x37;
 var PP_MIDI_MANUF_ID_2			=	0x72;
@@ -32,24 +32,27 @@ document.addEventListener('alpine:init', () => {
         pp_loading:             false,
         pp_stored:              false,
         pp_errors:              false,
-    })
+    });
+
+        
+
+
+    // https://webmidijs.org/docs/getting-started/basics
+    // Enable WebMidi.js and trigger the onEnabled() function when ready.
+    WebMidi
+    .enable({sysex: true})
+    .then(onEnabled)
+    .catch(err => alert(err));
+
+
+                               
 })
-
-
 function appInit(){
-  }
-
-function appData(){
-    return { };
 }
 
-
-// https://webmidijs.org/docs/getting-started/basics
-// Enable WebMidi.js and trigger the onEnabled() function when ready.
-WebMidi
-.enable({sysex: true})
-.then(onEnabled)
-.catch(err => alert(err));
+function appData(){
+return { };
+}
 
 function onEnabled() {
 
@@ -103,14 +106,14 @@ function store(){
 function parseSysEx( sysex ){
     console.log('sysex: ', sysex );
     if ( sysex.data[1] != PP_MIDI_MANUF_ID_1 || sysex.data[2] != PP_MIDI_MANUF_ID_2 || sysex.data[3] != PP_MIDI_PRODUCT_ID ) return null; // Discard all SysEx that's not for this device
-	if ( sysex.data[4] != X_REP ) return null; // Discard all messages that are not a reply
+    if ( sysex.data[4] != X_REP ) return null; // Discard all messages that are not a reply
 
     Alpine.store('pp').pp_loading = false;
-	
+    
     var action = sysex.data[5];
 
-	switch ( action ) {
-		case X_GET:
+    switch ( action ) {
+        case X_GET:
             console.info("GET");
             Alpine.store('pp').pp_got_config            = true;
             Alpine.store('pp').pp_ver_major             = sysex.data[6];
@@ -144,9 +147,9 @@ function parseSysEx( sysex ){
             }
             console.log('parameters', parameters);
             Alpine.store('pp').pp_parameters = parameters;
-		break;
+        break;
 
-		case X_SET:
+        case X_SET:
             console.info("SET");
             var pp_set_response     = sysex.data[6];
 
