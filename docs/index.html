@@ -49,9 +49,8 @@
                 <h1>
                     Push Push Editor
                 </h1>
-
                 <div x-show="$store.pp.pp_got_config" x-transition>
-                    Push Push connected: version <span x-text="$store.pp.pp_ver_major"></span>.<span x-text="$store.pp.pp_ver_minor"></span>.<span x-text="$store.pp.pp_ver_patch"></span>; model: <span x-text="$store.pp.pp_model_id"></span>; device: <span x-text="$store.pp.device"></span>. 
+                    Push Push connected: version <span x-text="parseInt($store.pp.pp_ver_major, 16)"></span>.<span x-text="parseInt($store.pp.pp_ver_minor, 16)"></span>.<span x-text="parseInt($store.pp.pp_ver_patch, 16)"></span>; model: <span x-text="parseInt($store.pp.pp_model_id, 16)"></span>; device: <span x-text="$store.pp.device"></span>. 
                     [<a href="" x-data @click="$store.pp.pp_got_config = false ">Disconnect</a>]
                 </div>
             <div x-show="$store.pp.pp_loading" x-transition>LOADING</div>
