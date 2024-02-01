@@ -209,13 +209,16 @@ async function file_import(){
         const content =  await file.text();
         const sysex = content.split(" ");
         try{
-            // TODO: check. is valid lenght?
 
             if( sysex[0] != 240 || sysex[sysex.length -1] != 247 ) throw new TypeError("Wrong data format");
             if ( !syx_is_pushpush ( sysex ) ) throw new TypeError("Data not for Push Push"); 
-            // if ( Alpine.store('pp').pp_model_id != sysex[9] )  throw new TypeError("Data not for this Push Push model"); 
+            if( Alpine.store('pp').device ){
+                 if ( Alpine.store('pp').pp_model_id != sysex[9] )  throw new TypeError("Data not for the connected Push Push model"); 
+            }
             if ( !syx_is_repl ( sysex ) ) throw new TypeError("Data not for Push Push config");
             if( sysex[5] != X_GET )  throw new TypeError("Data not for Push Push config file");
+            if( sysex.length != 2+11+sysex[10]*sysex[11]*2 ) throw new TypeError("Invalid data");
+
             assignParams( sysex );
         }
         catch (e) {
