@@ -53,8 +53,7 @@
                 [<a href="" x-data @click.prevent="file_import()" title="Read configuration from file">Import from file</a>]
                 <div class="row" x-show="$store.pp.pp_import_error" x-transition>
                     <h2>Import failed</h2>
-                    <p>Push Push said: <span x-text="$store.pp.pp_import_error"></span>
-                </p>
+                    <p>Push Push said: <span x-text="$store.pp.pp_import_error"></span></p>
                     <button type="button" x-data @click.prevent="$store.pp.pp_import_error = false" class="button-primary">Ok</button>
                 </div>
 

@@ -87,10 +87,16 @@ function connect(  ){
 
 function store(){
     Alpine.store('pp').pp_loading = true;
-    var parameters = Alpine.store('pp').pp_parameters
-
     var sysex = [];
     sysex.push(X_REQ, X_SET);
+    sysex = syx_enqueue( sysex );
+    toPushPush.sendSysex(PP_MANUF, sysex);
+}
+
+function syx_enqueue( sysex ){
+    var parameters = Alpine.store('pp').pp_parameters
+
+
     sysex.push(Alpine.store('pp').pp_ver_major, Alpine.store('pp').pp_ver_minor, Alpine.store('pp').pp_ver_patch, Alpine.store('pp').pp_model_id, Alpine.store('pp').pp_num_buttons, Alpine.store('pp').pp_keys_sequence_size);
     
     for (let btn = 0; btn < Alpine.store('pp').pp_num_buttons; btn++) {
@@ -100,8 +106,7 @@ function store(){
             sysex.push( nyb1, nyb2 );
         }
     }
-
-    toPushPush.sendSysex(PP_MANUF, sysex);
+    return sysex;
 }
 
 function syx_is_pushpush( sysex ){
@@ -221,4 +226,50 @@ async function file_import(){
     catch (e) {
         console.error(e.message);
     }
+}
+
+async function file_export() {
+    try{
+        const options = {
+            types: [
+                {
+                  description: 'Push Push editor files',
+                  accept: {
+                    'text/plain': ['.pushpush'],
+                  },
+                },
+              ],
+        };
+        const fileHandle = await window.showSaveFilePicker(options);
+
+        var sysex = [];
+        sysex.push( 240, PP_MIDI_MANUF_ID_1, PP_MIDI_MANUF_ID_2, PP_MIDI_PRODUCT_ID, X_REP, X_GET);
+        sysex = syx_enqueue( sysex );
+        sysex.push(247);
+        sysex = sysex.join(' ');
+
+        const writable = await fileHandle.createWritable();
+        const optWrite = {
+            type: "write",
+            data: sysex
+        }
+        await writable.write( optWrite );
+        await writable.close();
+
+    }
+    catch (e) {
+        console.error(e.message);
+    }
+
+  }
+
+  
+// fileHandle is an instance of FileSystemFileHandle..
+async function writeFile(fileHandle, contents) {
+    // Create a FileSystemWritableFileStream to write to.
+    const writable = await fileHandle.createWritable();
+    // Write the contents of the file to the stream.
+    await writable.write(contents);
+    // Close the file and write the contents to disk.
+    await writable.close();
 }
