@@ -94,11 +94,9 @@ function store(){
 }
 
 function syx_enqueue( sysex ){
-    var parameters = Alpine.store('pp').pp_parameters
-
-
     sysex.push(Alpine.store('pp').pp_ver_major, Alpine.store('pp').pp_ver_minor, Alpine.store('pp').pp_ver_patch, Alpine.store('pp').pp_model_id, Alpine.store('pp').pp_num_buttons, Alpine.store('pp').pp_keys_sequence_size);
     
+    var parameters = Alpine.store('pp').pp_parameters
     for (let btn = 0; btn < Alpine.store('pp').pp_num_buttons; btn++) {
         for (let key = 0; key < Alpine.store('pp').pp_keys_sequence_size; key++) {
             var nyb1 = ( parameters[btn][key] >>7 ) & 0x7F ;
@@ -110,8 +108,6 @@ function syx_enqueue( sysex ){
 }
 
 function syx_is_pushpush( sysex ){
-    console.log('PP_MIDI_MANUF_ID_1', PP_MIDI_MANUF_ID_1);
-    console.log('data1', sysex[1] );
     if ( sysex[1] != PP_MIDI_MANUF_ID_1 || sysex[2] != PP_MIDI_MANUF_ID_2 || sysex[3] != PP_MIDI_PRODUCT_ID ) return false; // Discard all SysEx that's not for this device
     return true;
 }
@@ -135,24 +131,20 @@ function assignParams( sysex ){
     var parameters = [];
     var index = 0;
     for (let btn = 0; btn < Alpine.store('pp').pp_num_buttons; btn++) {
-        // console.log('index: ', index);
         parameters[btn] = [];
-        // console.log('btn: ', btn);
+
         for (let key = 0; key < Alpine.store('pp').pp_keys_sequence_size; key++) {
-            // console.log('key:', key);
             nymb1 = data[index];
             nymb2 = data[index+1];
-            // console.log('nym1', nymb1);
-            // console.log('nym2', nymb2);
             
             var res = (data[index] << 7) | data[index+1] ;  // combine the 7 bit chunks to 14 bits in the int
             res = res << 2 >> 2 ;  // sign-extend as 16 bit
-            // console.log('res: ', res);
+
             parameters[btn][key] = res;
             index = index + 2;
         }
     }
-    console.log('parameters', parameters);
+    // console.log('parameters', parameters);
     Alpine.store('pp').pp_parameters = parameters;
 }
 
