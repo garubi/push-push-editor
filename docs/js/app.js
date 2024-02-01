@@ -32,6 +32,7 @@ document.addEventListener('alpine:init', () => {
         pp_loading:             false,
         pp_stored:              false,
         pp_errors:              false,
+        pp_import_error:        false,
     });
 
         
@@ -103,10 +104,57 @@ function store(){
     toPushPush.sendSysex(PP_MANUF, sysex);
 }
 
+function syx_is_pushpush( sysex ){
+    console.log('PP_MIDI_MANUF_ID_1', PP_MIDI_MANUF_ID_1);
+    console.log('data1', sysex[1] );
+    if ( sysex[1] != PP_MIDI_MANUF_ID_1 || sysex[2] != PP_MIDI_MANUF_ID_2 || sysex[3] != PP_MIDI_PRODUCT_ID ) return false; // Discard all SysEx that's not for this device
+    return true;
+}
+
+function syx_is_repl( sysex ){
+    if ( sysex[4] != X_REP ) return false; // Discard all messages that are not a reply
+    return true;
+}
+
+function assignParams( sysex ){
+    Alpine.store('pp').pp_got_config            = true;
+    Alpine.store('pp').pp_ver_major             = sysex[6];
+    Alpine.store('pp').pp_ver_minor             = sysex[7];
+    Alpine.store('pp').pp_ver_patch             = sysex[8];
+    Alpine.store('pp').pp_model_id              = sysex[9];
+    Alpine.store('pp').pp_num_buttons           = sysex[10];
+    Alpine.store('pp').pp_keys_sequence_size    = sysex[11];
+
+    var data = Object.values(sysex);
+    data = data.slice( 12, -1 );
+    var parameters = [];
+    var index = 0;
+    for (let btn = 0; btn < Alpine.store('pp').pp_num_buttons; btn++) {
+        // console.log('index: ', index);
+        parameters[btn] = [];
+        // console.log('btn: ', btn);
+        for (let key = 0; key < Alpine.store('pp').pp_keys_sequence_size; key++) {
+            // console.log('key:', key);
+            nymb1 = data[index];
+            nymb2 = data[index+1];
+            // console.log('nym1', nymb1);
+            // console.log('nym2', nymb2);
+            
+            var res = (data[index] << 7) | data[index+1] ;  // combine the 7 bit chunks to 14 bits in the int
+            res = res << 2 >> 2 ;  // sign-extend as 16 bit
+            // console.log('res: ', res);
+            parameters[btn][key] = res;
+            index = index + 2;
+        }
+    }
+    console.log('parameters', parameters);
+    Alpine.store('pp').pp_parameters = parameters;
+}
+
 function parseSysEx( sysex ){
     console.log('sysex: ', sysex );
-    if ( sysex.data[1] != PP_MIDI_MANUF_ID_1 || sysex.data[2] != PP_MIDI_MANUF_ID_2 || sysex.data[3] != PP_MIDI_PRODUCT_ID ) return null; // Discard all SysEx that's not for this device
-    if ( sysex.data[4] != X_REP ) return null; // Discard all messages that are not a reply
+    if ( !syx_is_pushpush ( sysex.data ) ) return null;
+    if ( !syx_is_repl ( sysex.data ) ) return null;
 
     Alpine.store('pp').pp_loading = false;
     
@@ -115,38 +163,8 @@ function parseSysEx( sysex ){
     switch ( action ) {
         case X_GET:
             console.info("GET");
-            Alpine.store('pp').pp_got_config            = true;
-            Alpine.store('pp').pp_ver_major             = sysex.data[6];
-            Alpine.store('pp').pp_ver_minor             = sysex.data[7];
-            Alpine.store('pp').pp_ver_patch             = sysex.data[8];
-            Alpine.store('pp').pp_model_id              = sysex.data[9];
-            Alpine.store('pp').pp_num_buttons           = sysex.data[10];
-            Alpine.store('pp').pp_keys_sequence_size    = sysex.data[11];
+            assignParams( sysex.data );
 
-            var data = Object.values(sysex.data);
-            data = data.slice( 12, -1 );
-            var parameters = [];
-            var index = 0;
-            for (let btn = 0; btn < Alpine.store('pp').pp_num_buttons; btn++) {
-                // console.log('index: ', index);
-                parameters[btn] = [];
-                // console.log('btn: ', btn);
-                for (let key = 0; key < Alpine.store('pp').pp_keys_sequence_size; key++) {
-                    // console.log('key:', key);
-                    nymb1 = data[index];
-                    nymb2 = data[index+1];
-                    // console.log('nym1', nymb1);
-                    // console.log('nym2', nymb2);
-                    
-                    var res = (data[index] << 7) | data[index+1] ;  // combine the 7 bit chunks to 14 bits in the int
-                    res = res << 2 >> 2 ;  // sign-extend as 16 bit
-                    // console.log('res: ', res);
-                    parameters[btn][key] = res;
-                    index = index + 2;
-                }
-            }
-            console.log('parameters', parameters);
-            Alpine.store('pp').pp_parameters = parameters;
         break;
 
         case X_SET:
@@ -163,5 +181,44 @@ function parseSysEx( sysex ){
             Alpine.store('pp').pp_errors = true;
             console.error("Action invalid: ", action );
         break;
+    }
+}
+
+async function file_import(){
+    let fileHandle;
+    try{
+        const pickerOpts = {
+            types: [
+              {
+                description: "Push Push editor files",
+                accept: {
+                  "application/octet-stream": [".pushpush"],
+                },
+              },
+            ],
+            excludeAcceptAllOption: true,
+            multiple: false,
+          };
+        [fileHandle] =  await window.showOpenFilePicker( pickerOpts );
+        const file =  await fileHandle.getFile();
+        const content =  await file.text();
+        const sysex = content.split(" ");
+        try{
+            // TODO: check. is valid lenght?
+
+            if( sysex[0] != 240 || sysex[sysex.length -1] != 247 ) throw new TypeError("Wrong data format");
+            if ( !syx_is_pushpush ( sysex ) ) throw new TypeError("Data not for Push Push"); 
+            // if ( Alpine.store('pp').pp_model_id != sysex[9] )  throw new TypeError("Data not for this Push Push model"); 
+            if ( !syx_is_repl ( sysex ) ) throw new TypeError("Data not for Push Push config");
+            if( sysex[5] != X_GET )  throw new TypeError("Data not for Push Push config file");
+            assignParams( sysex );
+        }
+        catch (e) {
+            console.error(e.message);
+            Alpine.store('pp').pp_import_error = e.message;
+        }
+    }
+    catch (e) {
+        console.error(e.message);
     }
 }
