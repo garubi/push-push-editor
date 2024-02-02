@@ -85,15 +85,15 @@ function connect(  ){
     fromPushPush.addListener("sysex", parseSysEx);
 }
 
-function store(){
+function storeInPushPush(){
     Alpine.store('pp').pp_loading = true;
     var sysex = [];
     sysex.push(X_REQ, X_SET);
-    sysex = syx_enqueue( sysex );
+    sysex = sysEnqueueParams( sysex );
     toPushPush.sendSysex(PP_MANUF, sysex);
 }
 
-function syx_enqueue( sysex ){
+function sysEnqueueParams( sysex ){
     sysex.push(Alpine.store('pp').pp_ver_major, Alpine.store('pp').pp_ver_minor, Alpine.store('pp').pp_ver_patch, Alpine.store('pp').pp_model_id, Alpine.store('pp').pp_num_buttons, Alpine.store('pp').pp_keys_sequence_size);
     
     var parameters = Alpine.store('pp').pp_parameters
@@ -107,12 +107,12 @@ function syx_enqueue( sysex ){
     return sysex;
 }
 
-function syx_is_pushpush( sysex ){
+function syxIsPushPush( sysex ){
     if ( sysex[1] != PP_MIDI_MANUF_ID_1 || sysex[2] != PP_MIDI_MANUF_ID_2 || sysex[3] != PP_MIDI_PRODUCT_ID ) return false; // Discard all SysEx that's not for this device
     return true;
 }
 
-function syx_is_repl( sysex ){
+function sysIsReply( sysex ){
     if ( sysex[4] != X_REP ) return false; // Discard all messages that are not a reply
     return true;
 }
@@ -150,8 +150,8 @@ function assignParams( sysex ){
 
 function parseSysEx( sysex ){
     console.log('sysex: ', sysex );
-    if ( !syx_is_pushpush ( sysex.data ) ) return null;
-    if ( !syx_is_repl ( sysex.data ) ) return null;
+    if ( !syxIsPushPush ( sysex.data ) ) return null;
+    if ( !sysIsReply ( sysex.data ) ) return null;
 
     Alpine.store('pp').pp_loading = false;
     
@@ -181,7 +181,7 @@ function parseSysEx( sysex ){
     }
 }
 
-async function file_import(){
+async function openFilePicker(){
     let fileHandle;
     try{
         const pickerOpts = {
@@ -189,48 +189,53 @@ async function file_import(){
               {
                 description: "Push Push editor files",
                 accept: {
-                  "*/*": [".pushpush"],
+                  "text/pushpush": [".pushpush"],
                 },
               },
             ],
             excludeAcceptAllOption: true,
             multiple: false,
           };
-        [fileHandle] =  await window.showOpenFilePicker( pickerOpts );
-        const file =  await fileHandle.getFile();
-        const content =  await file.text();
-        const sysex = content.split(" ");
-        try{
+        [fileHandle] =  await window.showopenFilePicker( pickerOpts );
+         fileImport( fileHandle );
 
-            if( sysex[0] != 240 || sysex[sysex.length -1] != 247 ) throw new TypeError("Wrong data format");
-            if ( !syx_is_pushpush ( sysex ) ) throw new TypeError("Data not for Push Push"); 
-            if( Alpine.store('pp').device ){
-                 if ( Alpine.store('pp').pp_model_id != sysex[9] )  throw new TypeError("Data not for the connected Push Push model"); 
-            }
-            if ( !syx_is_repl ( sysex ) ) throw new TypeError("Data not for Push Push config");
-            if( sysex[5] != X_GET )  throw new TypeError("Data not for Push Push config file");
-            if( sysex.length != 2+11+sysex[10]*sysex[11]*2 ) throw new TypeError("Invalid data");
-
-            assignParams( sysex );
-        }
-        catch (e) {
-            console.error(e.message);
-            Alpine.store('pp').pp_import_error = e.message;
-        }
     }
     catch (e) {
         console.error(e.message);
     }
 }
 
-async function file_export() {
+async function fileImport( fileHandle ){
+    const file =  await fileHandle.getFile();
+    const content =  await file.text();
+    const sysex = content.split(" ");
+    try{
+
+        if( sysex[0] != 240 || sysex[sysex.length -1] != 247 ) throw new TypeError("Wrong data format");
+        if ( !syxIsPushPush ( sysex ) ) throw new TypeError("Data not for Push Push"); 
+        if( Alpine.store('pp').device ){
+             if ( Alpine.store('pp').pp_model_id != sysex[9] )  throw new TypeError("Data not for the connected Push Push model"); 
+        }
+        if ( !sysIsReply ( sysex ) ) throw new TypeError("Data not for Push Push config");
+        if( sysex[5] != X_GET )  throw new TypeError("Data not for Push Push config file");
+        if( sysex.length != 2+11+sysex[10]*sysex[11]*2 ) throw new TypeError("Invalid data");
+
+        assignParams( sysex );
+    }
+    catch (e) {
+        console.error(e.message);
+        Alpine.store('pp').pp_import_error = e.message;
+    }
+}
+
+async function fileExport() {
     try{
         const options = {
             types: [
                 {
                   description: 'Push Push editor files',
                   accept: {
-                    '*/*': ['.pushpush'],
+                    "text/pushpush": ['.pushpush'],
                   },
                 },
               ],
@@ -239,7 +244,7 @@ async function file_export() {
 
         var sysex = [];
         sysex.push( 240, PP_MIDI_MANUF_ID_1, PP_MIDI_MANUF_ID_2, PP_MIDI_PRODUCT_ID, X_REP, X_GET);
-        sysex = syx_enqueue( sysex );
+        sysex = sysEnqueueParams( sysex );
         sysex.push(247);
         sysex = sysex.join(' ');
 
@@ -259,12 +264,11 @@ async function file_export() {
   }
 
   
-// fileHandle is an instance of FileSystemFileHandle..
-async function writeFile(fileHandle, contents) {
-    // Create a FileSystemWritableFileStream to write to.
-    const writable = await fileHandle.createWritable();
-    // Write the contents of the file to the stream.
-    await writable.write(contents);
-    // Close the file and write the contents to disk.
-    await writable.close();
+if ("launchQueue" in window) {
+    launchQueue.setConsumer(async (launchParams) => {
+        console.log("launchQueue");
+        for (const fileHandle of launchParams.files) {
+            fileImport( fileHandle );
+        }
+    });
 }
