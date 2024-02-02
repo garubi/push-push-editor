@@ -362,9 +362,22 @@
 
             <div id="help-screen" x-show="$store.pp.show_page == 'credits'" x-transition>
                 <h2>About & Credits</h2>
+                <p>
+                    Push Push Editor ver <span x-text="$store.pp.editor_version"></span> <br>
+                    (c) 2024 by Stefano Garuti <br>
+                    <a href="https://www.gnu.org/licenses/gpl-3.0.html#license-text" target="_blank">
+                        Licensed under Gnu General Public License v. 3
+                    </a>
+                </p>
+                <p>
+                    Built with:
+                    <ul>
+                        <li><a href="https://alpinejs.dev/" target="_blank">Alpine.js</a></li>
+                        <li><a href="https://webmidijs.org/" target="_blank">WebMIDI.js</a></li>
+                        <li><a href="https://getskeleton.com" target="_blank">Skeleotn css</a></li>
+                    </ul>
+                </p>
                 [<a href="" x-data @click.prevent="$store.pp.show_page = 'editor'">Back to editor</a>]
-                ...
-
 
             </div>
             <hr>
