@@ -9,6 +9,8 @@ const PRE_CACHED_RESOURCES = [
   "images/192x192.png",
   "images/512x512.png",
   "images/animated-preview.gif",
+  "images/install-desktop.png",
+  "images/install-mobile.png",
   "js/alpine.min.js",
   "js/app.js",
   "js/webmidi.iife.min.js",

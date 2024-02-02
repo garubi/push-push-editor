@@ -87,6 +87,19 @@ button[disabled]{
   color: #666666;
 }
 
+img.help{
+    max-width: 100%;
+    height: auto;
+    margin: auto;
+}
+
+img.shadow{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+h1 img{
+  vertical-align: middle;
+}
 /* for Alpine.js */
 [x-cloak] {
   display: none !important;

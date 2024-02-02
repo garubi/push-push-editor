@@ -33,6 +33,7 @@ document.addEventListener('alpine:init', () => {
         pp_stored:              false,
         pp_errors:              false,
         pp_import_error:        false,
+        show_page:           'editor',
     });
 
         
@@ -196,7 +197,7 @@ async function openFilePicker(){
             excludeAcceptAllOption: true,
             multiple: false,
           };
-        [fileHandle] =  await window.showopenFilePicker( pickerOpts );
+        [fileHandle] =  await window.showOpenFilePicker( pickerOpts );
          fileImport( fileHandle );
 
     }

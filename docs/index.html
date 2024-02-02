@@ -34,14 +34,16 @@
     <body>
         <div class="container text-center" x-data="appData()" x-init="appInit()">
 
-            <div class="">
-                <img src="images/192x192.png" alt="Push Push icon" height="80px" width="80px" />
-                
+            <div id="header" class="">
                 <h1>
+                    <img src="images/192x192.png" alt="Push Push icon" height="80px" width="80px"/>
                     Push Push Editor
                 </h1>
-                [<a href="" x-data @click.prevent="fileExport()" title="Save current settings in a file for later import">Export to file</a>] 
-                [<a href="" x-data @click.prevent="openFilePicker()" title="Read configuration from file">Import from file</a>]
+                [<a href="" x-data @click.prevent="$store.pp.show_page == 'help'? $store.pp.show_page = 'editor' : $store.pp.show_page = 'help' " x-text="$store.pp.show_page == 'help'?'Go to editor' : 'Show user guide'" ></a>]
+            </div>
+            <hr>
+            <div id="editor-screen" x-show="$store.pp.show_page == 'editor'" x-transition>
+
                 <div class="row" x-show="$store.pp.pp_import_error" x-transition>
                     <h2>Import failed</h2>
                     <p>Push Push said: <span x-text="$store.pp.pp_import_error"></span></p>
@@ -53,268 +55,334 @@
                     [<a href="" x-data @click="$store.pp.pp_got_config = false ">Disconnect</a>]
                 </div>
                 <div x-show="$store.pp.pp_loading" x-transition>LOADING</div>
-            </div>
 
-            <div x-show="! $store.pp.pp_got_config" x-transition>
-                <h2>
-                    What it is
-                </h2>
-                <p>
-                    Use this web app for the configuration of <a href="https://github.com/garubi/push-push" target="_blank" rel="noreferrer">Push Push</a>, a DIY device that you can easily build with Arduino (<a href="https://github.com/garubi/push-push" target="_blank" rel="noreferrer">See here</a>). <br>
-                    Push Push is a very easy to build device (based on Arduino) that allows you to send keystrokes to a computer by emulating a USB keyboard.
-                    This editor is for setting the keystrokes that each button of the Push Push sends to your computer.
-                </p>
-                <h2>How to use this editor</h2>
-                <p>
-                    <center><img src="images/animated-preview.gif" ></center>
-                    <ol>
-                        <li><b>Connect</b> your Push Push to the computer with the USB cable</li>
-                        <li><a href="#"><b>Open  this web page</b> (or reload it)</a></li>
-                        <li>The browser will ask you the permission to open and reconfigure your MIDI devices with SysEx.<br><b>Consent</b> to it (Sysex is the language we use to send configuration messages to Push Push)</li>
-                        <li><b>Select your device</b> from the dropdown.<br> (Tipically the device is not named Push Push. It is named after the Arduino Board you used to build it, es: <b>Arduino Leonardo</b>)</li>
-                        <li><b>Click Connect</b></li>
-                        <li>A table will appear with your buttons in each row and up to five keys dropdowns in columns. The first 4 keys are so called "modifiers": CTRL, ALT SHIFT etc.. The last column are letters and special keys. If your Push Push was already configured with some key, they will be preselected in the dropdowns</li>
-                        <li><b>Select the key combination you need</b> for each button and <b>click Store</b> to send and save it to your Push Push</li>
-                        <li>If you messed up and want to restart, simply click Refresh and the pre-existent configuration will be reloaded from your Push Push</li>
-                    </ol>
-                    <b>Attention:</b> the editor doesn't run inside Firefox. You have to use Chrome, Edge, Safari, Opera, etc..
-                </p>
-            </div>
-
-            <div x-show="!$store.pp.device" x-transition>
-                <h3>
-                    Select your device
-                </h3>
-                <select @change="$store.pp.device = $el.value">
-                    <option value="">---</option>
-                    <template x-for="device in $store.pp.devices">
-                        <option :value="device.name" x-text="device.name"></option>
-                    </template>
-                </select>
-                <button x-data @click="connect($store.pp.device)" :disabled= !$store.pp.device>Connect <span x-text=$store.pp.device></span></button>
-            </div>
-
-            <div x-show="$store.pp.no_devices" x-transition>
-                <h3>
-                   No devices found!
-                </h3>
-            </div>
-
-            <div x-show="$store.pp.pp_got_config" x-transition>
-                <h2>Configure Push Push</h2>
-
-                <div x-show="$store.pp.pp_num_buttons" x-transition>
-                    <form>
-                        <div class="row"  x-show="! $store.pp.pp_stored" x-transition>
-                            <template x-for="(button, index) in $store.pp.pp_parameters">    
-
-                                <div class="row" id="row-btn-1">
-                                    <div class="two columns col-1">
-                                        <label>Button <span x-text="index+1"></span></label>                                
-                                    </div>
-    
-                                    <template x-for="key in $store.pp.pp_keys_sequence_size-1">
-                                        <div class="two columns">
-                                            <label for="">Modifier <span x-text="key"></span></label>
-                                            <select x-model="button[key-1]" class="u-full-width" id="">
-                                                <option value="0">none</option>
-                                                <option value="128">CTRL (Left)</option>
-                                                <option value="129">SHIFT (Left)</option>
-                                                <option value="130">ALT (Left) (⌥ on Mac)</option>
-                                                <option value="131">GUI (Left) (⌘ on Mac)</option>
-                                                <option value="132">CTRL (Right) </option>
-                                                <option value="133">SHIFT (Right) </option>
-                                                <option value="134">ALT (Right) (AltGr, ⌥ on Mac)</option>
-                                                <option value="135">GUI (Right) (⌘ on Mac)</option>
-                                            </select>
-                                        </div>
-                                    </template>
-    
-                                    <div class="two columns">
-                                        <label for="">Key</label>
-                                        <select x-model="button[4]" class="u-full-width" id="">
-                                            <option value="0">none</option>
-                                            <option value="48">0</option>
-                                            <option value="49">1</option>
-                                            <option value="50">2</option>
-                                            <option value="51">3</option>
-                                            <option value="52">4</option>
-                                            <option value="53">5</option>
-                                            <option value="54">6</option>
-                                            <option value="55">7</option>
-                                            <option value="56">8</option>
-                                            <option value="57">9</option>
-                                            <option value="58">:</option>
-                                            <option value="59">;</option>
-                                            <option value="60"><</option>
-                                            <option value="61">=</option>
-                                            <option value="62">></option>
-                                            <option value="63">?</option>
-                                            <option value="64">@</option>
-                                            <!-- <option value="65">A</option>
-                                            <option value="66">B</option>
-                                            <option value="67">C</option>
-                                            <option value="68">D</option>
-                                            <option value="69">E</option>
-                                            <option value="70">F</option>
-                                            <option value="71">G</option>
-                                            <option value="72">H</option>
-                                            <option value="73">I</option>
-                                            <option value="74">J</option>
-                                            <option value="75">K</option>
-                                            <option value="76">L</option>
-                                            <option value="77">M</option>
-                                            <option value="78">N</option>
-                                            <option value="79">O</option>
-                                            <option value="80">P</option>
-                                            <option value="81">Q</option>
-                                            <option value="82">R</option>
-                                            <option value="83">S</option>
-                                            <option value="84">T</option>
-                                            <option value="85">U</option>
-                                            <option value="86">V</option>
-                                            <option value="87">W</option>
-                                            <option value="88">X</option>
-                                            <option value="89">Y</option>
-                                            <option value="90">Z</option> -->
-                                            <option value="97">a</option>
-                                            <option value="98">b</option>
-                                            <option value="99">c</option>
-                                            <option value="100">d</option>
-                                            <option value="101">e</option>
-                                            <option value="102">f</option>
-                                            <option value="103">g</option>
-                                            <option value="104">h</option>
-                                            <option value="105">i</option>
-                                            <option value="106">j</option>
-                                            <option value="107">k</option>
-                                            <option value="108">l</option>
-                                            <option value="109">m</option>
-                                            <option value="110">n</option>
-                                            <option value="111">o</option>
-                                            <option value="112">p</option>
-                                            <option value="113">q</option>
-                                            <option value="114">r</option>
-                                            <option value="115">s</option>
-                                            <option value="116">t</option>
-                                            <option value="117">u</option>
-                                            <option value="118">v</option>
-                                            <option value="119">w</option>
-                                            <option value="120">x</option>
-                                            <option value="121">y</option>
-                                            <option value="122">z</option>
-                                            <option value="33">!</option>
-                                            <option value="34">"</option>
-                                            <option value="35">#</option>
-                                            <option value="36">$</option>
-                                            <option value="37">%</option>
-                                            <option value="38">&</option>
-                                            <option value="39">'</option>
-                                            <option value="40">(</option>
-                                            <option value="41">)</option>
-                                            <option value="42">*</option>
-                                            <option value="43">+</option>
-                                            <option value="44">,</option>
-                                            <option value="45">-</option>
-                                            <option value="46">.</option>
-                                            <option value="47">/</option>                                        
-                                            <option value="91">[</option>
-                                            <option value="92">\</option>
-                                            <option value="93">]</option>
-                                            <option value="94">^</option>
-                                            <option value="95">_</option>
-                                            <option value="96">`</option>
-                                            <option value="123">{</option>
-                                            <option value="124">|</option>
-                                            <option value="125">}</option>
-                                            <option value="126">~</option>
-                                            <option value="" disabled>------</option>
-                                            <option value="32">SPACE</option>
-                                            <option value="127">DEL</option>
-                                            <option value="179">TAB</option>
-                                            <!-- <option value="193">CAPS LOCK</option> -->
-                                            <option value="178">BACKSPACE</option>
-                                            <option value="176">RETURN</option>
-                                            <option value="237">MENU</option>
-                                            <option value="177">ESC</option>
-                                            <option value="209">INSERT</option>
-                                            <option value="212">DELETE</option>
-                                            <option value="210">HOME</option>
-                                            <option value="213">END</option>
-                                            <option value="" disabled>------</option>
-                                            <option value="211">PAGE UP</option>
-                                            <option value="214">PAGE DOWN</option>
-                                            <option value="218">UP ARROW</option>
-                                            <option value="217">DOWN ARROW</option>
-                                            <option value="216">LEFT ARROW</option>
-                                            <option value="215">RIGHT ARROW</option>
-                                            <option value="" disabled>------</option>
-                                            <option value="194">F1</option>
-                                            <option value="195">F2</option>
-                                            <option value="196">F3</option>
-                                            <option value="197">F4</option>
-                                            <option value="198">F5</option>
-                                            <option value="199">F6</option>
-                                            <option value="200">F7</option>
-                                            <option value="201">F8</option>
-                                            <option value="202">F9</option>
-                                            <option value="203">F10</option>
-                                            <option value="204">F11</option>
-                                            <option value="205">F12</option>
-                                            <option value="240">F13</option>
-                                            <option value="241">F14</option>
-                                            <option value="242">F15</option>
-                                            <option value="243">F16</option>
-                                            <option value="244">F17</option>
-                                            <option value="245">F18</option>
-                                            <option value="246">F19</option>
-                                            <option value="247">F20</option>
-                                            <option value="248">F21</option>
-                                            <option value="249">F22</option>
-                                            <option value="250">F23</option>
-                                            <option value="251">F24</option>
-                                        </select> 
-                                    </div>
-                                </div>
-                            </template>
-                            <div class="row" x-show="$store.pp.device">
-                                <div class="six columns">
-                                    <button type="button" x-data @click.prevent="connect()" :disabled= !$store.pp.device>Refresh from <span x-text=$store.pp.device></span></button>
-                                </div>
-        
-                                <div class="six columns right">
-                                    <button type="button" x-data @click.prevent="storeInPushPush()" :disabled= !$store.pp.device class="button-primary">Store in <span x-text=$store.pp.device></span></button>
-                                </div>
-                            </div>
-                            <div class="row" x-show="!$store.pp.device">
-                                <p>No device connected</p>
-                                [<a href="" x-data @click="$store.pp.pp_got_config = false ">Reset</a>]
-                            </div>
-                        </div>
-                    </form>   
-
-                    <div class="row" x-show="$store.pp.pp_stored" x-transition>
-                        <div class="row"  x-show="$store.pp.pp_stored == 1" x-transition>
-                            <h3>Configuration successfully stored</h3>
-                        </div>
-                        <div class="row"  x-show="$store.pp.pp_stored == 0x7F" x-transition>
-                            <h3>Error storing configuration</h3>
-                        </div>
-                        <button type="button" x-data @click.prevent="$store.pp.pp_stored = false" class="button-primary">Ok</button>
-                    </div>
-
-                    <div class="row" x-show="$store.pp.pp_errors" x-transition>
-                        <h2>Communication error</h2>
-                        <p>Push Push said: "The action command is invalid</p>
-                        <button type="button" x-data @click.prevent="$store.pp.pp_stored = false" class="button-primary">Ok</button>
-                    </div>
+                <div x-show="!$store.pp.device" x-transition>
+                    <h3>
+                        Select your device
+                    </h3>
+                    <select @change="$store.pp.device = $el.value">
+                        <option value="">---</option>
+                        <template x-for="device in $store.pp.devices">
+                            <option :value="device.name" x-text="device.name"></option>
+                        </template>
+                    </select>
+                    <button x-data @click="connect($store.pp.device)" :disabled= !$store.pp.device>Connect <span x-text=$store.pp.device></span></button>
                 </div>
-    
-             
+
+                <div x-show="$store.pp.no_devices" x-transition>
+                    <h3>
+                    No devices found!
+                    </h3>
+                </div>
+
+                <div x-show="$store.pp.pp_got_config" x-transition>
+                    <h2>Configure Push Push</h2>
+
+                    <div x-show="$store.pp.pp_num_buttons" x-transition>
+                        <form>
+                            <div class="row"  x-show="! $store.pp.pp_stored" x-transition>
+                                <template x-for="(button, index) in $store.pp.pp_parameters">    
+
+                                    <div class="row" id="row-btn-1">
+                                        <div class="two columns col-1">
+                                            <label>Button <span x-text="index+1"></span></label>                                
+                                        </div>
+        
+                                        <template x-for="key in $store.pp.pp_keys_sequence_size-1">
+                                            <div class="two columns">
+                                                <label for="">Modifier <span x-text="key"></span></label>
+                                                <select x-model="button[key-1]" class="u-full-width" id="">
+                                                    <option value="0">none</option>
+                                                    <option value="128">CTRL (Left)</option>
+                                                    <option value="129">SHIFT (Left)</option>
+                                                    <option value="130">ALT (Left) (⌥ on Mac)</option>
+                                                    <option value="131">GUI (Left) (⌘ on Mac)</option>
+                                                    <option value="132">CTRL (Right) </option>
+                                                    <option value="133">SHIFT (Right) </option>
+                                                    <option value="134">ALT (Right) (AltGr, ⌥ on Mac)</option>
+                                                    <option value="135">GUI (Right) (⌘ on Mac)</option>
+                                                </select>
+                                            </div>
+                                        </template>
+        
+                                        <div class="two columns">
+                                            <label for="">Key</label>
+                                            <select x-model="button[4]" class="u-full-width" id="">
+                                                <option value="0">none</option>
+                                                <option value="48">0</option>
+                                                <option value="49">1</option>
+                                                <option value="50">2</option>
+                                                <option value="51">3</option>
+                                                <option value="52">4</option>
+                                                <option value="53">5</option>
+                                                <option value="54">6</option>
+                                                <option value="55">7</option>
+                                                <option value="56">8</option>
+                                                <option value="57">9</option>
+                                                <option value="58">:</option>
+                                                <option value="59">;</option>
+                                                <option value="60"><</option>
+                                                <option value="61">=</option>
+                                                <option value="62">></option>
+                                                <option value="63">?</option>
+                                                <option value="64">@</option>
+                                                <!-- <option value="65">A</option>
+                                                <option value="66">B</option>
+                                                <option value="67">C</option>
+                                                <option value="68">D</option>
+                                                <option value="69">E</option>
+                                                <option value="70">F</option>
+                                                <option value="71">G</option>
+                                                <option value="72">H</option>
+                                                <option value="73">I</option>
+                                                <option value="74">J</option>
+                                                <option value="75">K</option>
+                                                <option value="76">L</option>
+                                                <option value="77">M</option>
+                                                <option value="78">N</option>
+                                                <option value="79">O</option>
+                                                <option value="80">P</option>
+                                                <option value="81">Q</option>
+                                                <option value="82">R</option>
+                                                <option value="83">S</option>
+                                                <option value="84">T</option>
+                                                <option value="85">U</option>
+                                                <option value="86">V</option>
+                                                <option value="87">W</option>
+                                                <option value="88">X</option>
+                                                <option value="89">Y</option>
+                                                <option value="90">Z</option> -->
+                                                <option value="97">a</option>
+                                                <option value="98">b</option>
+                                                <option value="99">c</option>
+                                                <option value="100">d</option>
+                                                <option value="101">e</option>
+                                                <option value="102">f</option>
+                                                <option value="103">g</option>
+                                                <option value="104">h</option>
+                                                <option value="105">i</option>
+                                                <option value="106">j</option>
+                                                <option value="107">k</option>
+                                                <option value="108">l</option>
+                                                <option value="109">m</option>
+                                                <option value="110">n</option>
+                                                <option value="111">o</option>
+                                                <option value="112">p</option>
+                                                <option value="113">q</option>
+                                                <option value="114">r</option>
+                                                <option value="115">s</option>
+                                                <option value="116">t</option>
+                                                <option value="117">u</option>
+                                                <option value="118">v</option>
+                                                <option value="119">w</option>
+                                                <option value="120">x</option>
+                                                <option value="121">y</option>
+                                                <option value="122">z</option>
+                                                <option value="33">!</option>
+                                                <option value="34">"</option>
+                                                <option value="35">#</option>
+                                                <option value="36">$</option>
+                                                <option value="37">%</option>
+                                                <option value="38">&</option>
+                                                <option value="39">'</option>
+                                                <option value="40">(</option>
+                                                <option value="41">)</option>
+                                                <option value="42">*</option>
+                                                <option value="43">+</option>
+                                                <option value="44">,</option>
+                                                <option value="45">-</option>
+                                                <option value="46">.</option>
+                                                <option value="47">/</option>                                        
+                                                <option value="91">[</option>
+                                                <option value="92">\</option>
+                                                <option value="93">]</option>
+                                                <option value="94">^</option>
+                                                <option value="95">_</option>
+                                                <option value="96">`</option>
+                                                <option value="123">{</option>
+                                                <option value="124">|</option>
+                                                <option value="125">}</option>
+                                                <option value="126">~</option>
+                                                <option value="" disabled>------</option>
+                                                <option value="32">SPACE</option>
+                                                <option value="127">DEL</option>
+                                                <option value="179">TAB</option>
+                                                <!-- <option value="193">CAPS LOCK</option> -->
+                                                <option value="178">BACKSPACE</option>
+                                                <option value="176">RETURN</option>
+                                                <option value="237">MENU</option>
+                                                <option value="177">ESC</option>
+                                                <option value="209">INSERT</option>
+                                                <option value="212">DELETE</option>
+                                                <option value="210">HOME</option>
+                                                <option value="213">END</option>
+                                                <option value="" disabled>------</option>
+                                                <option value="211">PAGE UP</option>
+                                                <option value="214">PAGE DOWN</option>
+                                                <option value="218">UP ARROW</option>
+                                                <option value="217">DOWN ARROW</option>
+                                                <option value="216">LEFT ARROW</option>
+                                                <option value="215">RIGHT ARROW</option>
+                                                <option value="" disabled>------</option>
+                                                <option value="194">F1</option>
+                                                <option value="195">F2</option>
+                                                <option value="196">F3</option>
+                                                <option value="197">F4</option>
+                                                <option value="198">F5</option>
+                                                <option value="199">F6</option>
+                                                <option value="200">F7</option>
+                                                <option value="201">F8</option>
+                                                <option value="202">F9</option>
+                                                <option value="203">F10</option>
+                                                <option value="204">F11</option>
+                                                <option value="205">F12</option>
+                                                <option value="240">F13</option>
+                                                <option value="241">F14</option>
+                                                <option value="242">F15</option>
+                                                <option value="243">F16</option>
+                                                <option value="244">F17</option>
+                                                <option value="245">F18</option>
+                                                <option value="246">F19</option>
+                                                <option value="247">F20</option>
+                                                <option value="248">F21</option>
+                                                <option value="249">F22</option>
+                                                <option value="250">F23</option>
+                                                <option value="251">F24</option>
+                                            </select> 
+                                        </div>
+                                    </div>
+                                </template>
+                                <div class="row" x-show="$store.pp.device">
+                                    <div class="six columns">
+                                        <button type="button" x-data @click.prevent="connect()" :disabled= !$store.pp.device>Refresh from <span x-text=$store.pp.device></span></button>
+                                    </div>
+            
+                                    <div class="six columns right">
+                                        <button type="button" x-data @click.prevent="storeInPushPush()" :disabled= !$store.pp.device class="button-primary">Store in <span x-text=$store.pp.device></span></button>
+                                    </div>
+                                </div>
+                                <div class="row" x-show="!$store.pp.device">
+                                    <p>No device connected</p>
+                                    [<a href="" x-data @click="$store.pp.pp_got_config = false ">Reset</a>]
+                                </div>
+                            </div>
+                        </form>   
+
+                        <div class="row" x-show="$store.pp.pp_stored" x-transition>
+                            <div class="row"  x-show="$store.pp.pp_stored == 1" x-transition>
+                                <h3>Configuration successfully stored</h3>
+                            </div>
+                            <div class="row"  x-show="$store.pp.pp_stored == 0x7F" x-transition>
+                                <h3>Error storing configuration</h3>
+                            </div>
+                            <button type="button" x-data @click.prevent="$store.pp.pp_stored = false" class="button-primary">Ok</button>
+                        </div>
+
+                        <div class="row" x-show="$store.pp.pp_errors" x-transition>
+                            <h2>Communication error</h2>
+                            <p>Push Push said: "The action command is invalid</p>
+                            <button type="button" x-data @click.prevent="$store.pp.pp_stored = false" class="button-primary">Ok</button>
+                        </div>
+                    </div>
+        
+                
+                </div>
+
+                [<a href="" x-data @click.prevent="fileExport()" title="Save current settings in a file for later import">Export to file</a>] 
+                [<a href="" x-data @click.prevent="openFilePicker()" title="Read configuration from file">Import from file</a>]
             </div>
 
+            <div id="help-screen" x-show="$store.pp.show_page == 'help'" x-transition>
+                <div class="row">
+                    <div class="three columns">
+                        <h5>Table of content</h5>
+                        <ul>
+                            <li><a href="#start">What it is</a> </li>
+                            <li><a href="#usage">How to use the editor</a></li>
+                            <li><a href="#install">How to install</a></li>
+                            <li><a href="#importexport">Import/ export configuration</a></li>
+                        </ul>
+                        [<a href="" x-data @click.prevent="$store.pp.show_page = 'editor'">Back to editor</a>]
+                    </div>
+                    <div class="nine columns">
+                        <h2><a name="start">User guide</a></h2>
+                        <p>
+                            This app is the editor for the configuration of <a href="https://github.com/garubi/push-push" target="_blank" rel="noreferrer">Push Push</a>, a DIY device that you can easily build with Arduino (<a href="https://github.com/garubi/push-push" target="_blank" rel="noreferrer">See here</a>). <br>
+                            Push Push allows you to send keystrokes to a computer by emulating a USB keyboard.<br>
+                            With this editor you can choose the keystrokes that each button of the Push Push sends to your computer.<br>
+                            The editor can work totally offline and can be installed on your desktop computer of tablet or cellphone.<br>
+                            You can also export the Push Push configuration to a file and import it at a later time, building a simple library of button configuration.<br>
+                        </p>
+                        <h2><a name="usage">How to use the editor</a></h2>
+                        <p>
+                            <img src="images/animated-preview.gif" class="help">
+                            <ol>
+                                <li><b>Connect</b> your Push Push to the computer with the USB cable</li>
+                                <li><a href="#"><b>Open  this web page</b> (or reload it)</a></li>
+                                <li>The browser will ask you the permission to open and reconfigure your MIDI devices with SysEx.<br><b>Consent</b> to it (Sysex is the language we use to send configuration messages to Push Push)</li>
+                                <li><b>Select your device</b> from the dropdown.<br> (Tipically the device is not named Push Push. It is named after the Arduino Board you used to build it, es: <b>Arduino Leonardo</b>)</li>
+                                <li><b>Click Connect</b></li>
+                                <li>A table will appear with your buttons in each row and up to five keys dropdowns in columns. The first 4 keys are so called "modifiers": CTRL, ALT SHIFT etc.. The last column are letters and special keys. If your Push Push was already configured with some key, they will be preselected in the dropdowns</li>
+                                <li><b>Select the key combination you need</b> for each button and <b>click Store</b> to send and save it to your Push Push</li>
+                                <li>If you messed up and want to restart, simply click Refresh and the pre-existent configuration will be reloaded from your Push Push</li>
+                            </ol>
+                            <b>Attention:</b> the editor doesn't run inside Firefox. You have to use Chrome, Edge, Safari, Opera, etc..
+                        </p>
+                        <h2><a name="install">How to install</a></h2>
+                        <p>
+                            The editor can work totally offline and can be installed on your desktop computer of tablet or cellphone.
+                        </p>
+                        <p>
+                            If you are on a <b>desktop computer</b>, click on the <b>install</b> icon in the browser address bar:<br>
+                            <img src="images/install-desktop.png" class="help shadow"><br>
+                        </p>
+                        <p>
+                            If you are on a <b>tablet or mobile phone</b>, a small notification shold appear on the bottom of the browser screen:<br>
+                            <img src="images/install-mobile.png" class="help shadow"><br>
+                            If the notification doesn't appear, click on the browser's menu and tap on <b>Install app</b> or <b>Add to home</b>
+                        </p>
+                        <h2><a name="importexport">Import / export configuration</a></h2>
+                        <p>
+                            In order to quickly change your Push Push configuration, restoring previous used ones, you can <b>save the configuration to a file</b>.<br>
+                        </p>
+                        <p>
+                            In the editor screen, click on the <b>Export to file</b> link, then choose the location where you want to store the file. Choose a name that will halp you remember what's tha configuration was for, then save.<br>
+                            The editor will create a <code>.pushpush</code> file that you could later import by clicking on the <b>Import from file</b> link.<br>
+                        </p>
+                        <p>
+                            Once imported back to the editor you can send it to your Push Push clicking on the <b>"Store to ..."</b> button.
+                        </p>
+                        [<a href="" x-data @click.prevent="$store.pp.show_page = 'editor'">Back to editor</a>]
+
+                    </div>
+
+                </div>
+                
+            </div>
+
+            <div id="help-screen" x-show="$store.pp.show_page == 'credits'" x-transition>
+                <h2>About & Credits</h2>
+                <p>
+                    Push Push Editor ver <span x-text="$store.pp.editor_version"></span> <br>
+                    (c) 2024 by <a href="https://github.com/garubi" target="_blank"><b>Stefano Garuti</b></a><br>
+                    Licensed under  <a href="https://www.gnu.org/licenses/gpl-3.0.html#license-text" target="_blank">
+                        Gnu General Public License v. 3
+                    </a>
+                </p>
+                <p>
+                    Built with:
+                    <ul>
+                        <li><a href="https://alpinejs.dev/" target="_blank">Alpine.js</a></li>
+                        <li><a href="https://webmidijs.org/" target="_blank">WebMIDI.js</a></li>
+                        <li><a href="https://getskeleton.com" target="_blank">Skeleotn css</a></li>
+                    </ul>
+                </p>
+                [<a href="" x-data @click.prevent="$store.pp.show_page = 'editor'">Back to editor</a>]
+
+            </div>
+            <hr>
             <div class="row">
-                Push Push Editor version: <span x-text="$store.pp.editor_version"></span>. (c) 2024 Stefano Garuti - [<a href="https://github.com/garubi/push-push-editor">GitHub</a>]
+                Push Push Editor version: <span x-text="$store.pp.editor_version"></span>. (c) 2024 Stefano Garuti - [<a href="" x-data @click.prevent="$store.pp.show_page = 'credits'">About & Credits</a>] - [<a href="https://github.com/garubi/push-push-editor">GitHub</a>]
             </div>
         </div>
 
