@@ -189,7 +189,7 @@ async function file_import(){
               {
                 description: "Push Push editor files",
                 accept: {
-                  "application/octet-stream": [".pushpush"],
+                  "*/*": [".pushpush"],
                 },
               },
             ],
@@ -230,7 +230,7 @@ async function file_export() {
                 {
                   description: 'Push Push editor files',
                   accept: {
-                    'text/plain': ['.pushpush'],
+                    '*/*': ['.pushpush'],
                   },
                 },
               ],
