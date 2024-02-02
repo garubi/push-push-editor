@@ -39,5 +39,13 @@
       "description": "An animated preview of the editor",
       "form_factor": "narrow"
     }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "text/pushpush": [".pushpush"]
+      }
+    }
   ]
 }
