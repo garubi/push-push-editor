@@ -49,11 +49,19 @@
                 <h1>
                     Push Push Editor
                 </h1>
-                <div x-show="$store.pp.pp_got_config" x-transition>
+                [<a href="" x-data @click.prevent="file_export()" title="Save current settings in a file for later import">Export to file</a>] 
+                [<a href="" x-data @click.prevent="file_import()" title="Read configuration from file">Import from file</a>]
+                <div class="row" x-show="$store.pp.pp_import_error" x-transition>
+                    <h2>Import failed</h2>
+                    <p>Push Push said: <span x-text="$store.pp.pp_import_error"></span></p>
+                    <button type="button" x-data @click.prevent="$store.pp.pp_import_error = false" class="button-primary">Ok</button>
+                </div>
+
+                <div x-show="$store.pp.device" x-transition>
                     Push Push connected: version <span x-text="parseInt($store.pp.pp_ver_major, 16)"></span>.<span x-text="parseInt($store.pp.pp_ver_minor, 16)"></span>.<span x-text="parseInt($store.pp.pp_ver_patch, 16)"></span>; model: <span x-text="parseInt($store.pp.pp_model_id, 16)"></span>; device: <span x-text="$store.pp.device"></span>. 
                     [<a href="" x-data @click="$store.pp.pp_got_config = false ">Disconnect</a>]
                 </div>
-            <div x-show="$store.pp.pp_loading" x-transition>LOADING</div>
+                <div x-show="$store.pp.pp_loading" x-transition>LOADING</div>
             </div>
 
             <div x-show="! $store.pp.pp_got_config" x-transition>
@@ -82,7 +90,7 @@
                 </p>
             </div>
 
-            <div x-show="!$store.pp.pp_got_config" x-transition>
+            <div x-show="!$store.pp.device" x-transition>
                 <h3>
                     Select your device
                 </h3>
@@ -278,7 +286,7 @@
                                     </div>
                                 </div>
                             </template>
-                            <div class="row">
+                            <div class="row" x-show="$store.pp.device">
                                 <div class="six columns">
                                     <button type="button" x-data @click.prevent="connect()" :disabled= !$store.pp.device>Refresh from <span x-text=$store.pp.device></span></button>
                                 </div>
@@ -286,6 +294,10 @@
                                 <div class="six columns right">
                                     <button type="button" x-data @click.prevent="store()" :disabled= !$store.pp.device class="button-primary">Store in <span x-text=$store.pp.device></span></button>
                                 </div>
+                            </div>
+                            <div class="row" x-show="!$store.pp.device">
+                                <p>No device connected</p>
+                                [<a href="" x-data @click="$store.pp.pp_got_config = false ">Reset</a>]
                             </div>
                         </div>
                     </form>   

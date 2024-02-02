@@ -32,6 +32,7 @@ document.addEventListener('alpine:init', () => {
         pp_loading:             false,
         pp_stored:              false,
         pp_errors:              false,
+        pp_import_error:        false,
     });
 
         
@@ -86,12 +87,16 @@ function connect(  ){
 
 function store(){
     Alpine.store('pp').pp_loading = true;
-    var parameters = Alpine.store('pp').pp_parameters
-
     var sysex = [];
     sysex.push(X_REQ, X_SET);
+    sysex = syx_enqueue( sysex );
+    toPushPush.sendSysex(PP_MANUF, sysex);
+}
+
+function syx_enqueue( sysex ){
     sysex.push(Alpine.store('pp').pp_ver_major, Alpine.store('pp').pp_ver_minor, Alpine.store('pp').pp_ver_patch, Alpine.store('pp').pp_model_id, Alpine.store('pp').pp_num_buttons, Alpine.store('pp').pp_keys_sequence_size);
     
+    var parameters = Alpine.store('pp').pp_parameters
     for (let btn = 0; btn < Alpine.store('pp').pp_num_buttons; btn++) {
         for (let key = 0; key < Alpine.store('pp').pp_keys_sequence_size; key++) {
             var nyb1 = ( parameters[btn][key] >>7 ) & 0x7F ;
@@ -99,14 +104,54 @@ function store(){
             sysex.push( nyb1, nyb2 );
         }
     }
+    return sysex;
+}
 
-    toPushPush.sendSysex(PP_MANUF, sysex);
+function syx_is_pushpush( sysex ){
+    if ( sysex[1] != PP_MIDI_MANUF_ID_1 || sysex[2] != PP_MIDI_MANUF_ID_2 || sysex[3] != PP_MIDI_PRODUCT_ID ) return false; // Discard all SysEx that's not for this device
+    return true;
+}
+
+function syx_is_repl( sysex ){
+    if ( sysex[4] != X_REP ) return false; // Discard all messages that are not a reply
+    return true;
+}
+
+function assignParams( sysex ){
+    Alpine.store('pp').pp_got_config            = true;
+    Alpine.store('pp').pp_ver_major             = sysex[6];
+    Alpine.store('pp').pp_ver_minor             = sysex[7];
+    Alpine.store('pp').pp_ver_patch             = sysex[8];
+    Alpine.store('pp').pp_model_id              = sysex[9];
+    Alpine.store('pp').pp_num_buttons           = sysex[10];
+    Alpine.store('pp').pp_keys_sequence_size    = sysex[11];
+
+    var data = Object.values(sysex);
+    data = data.slice( 12, -1 );
+    var parameters = [];
+    var index = 0;
+    for (let btn = 0; btn < Alpine.store('pp').pp_num_buttons; btn++) {
+        parameters[btn] = [];
+
+        for (let key = 0; key < Alpine.store('pp').pp_keys_sequence_size; key++) {
+            nymb1 = data[index];
+            nymb2 = data[index+1];
+            
+            var res = (data[index] << 7) | data[index+1] ;  // combine the 7 bit chunks to 14 bits in the int
+            res = res << 2 >> 2 ;  // sign-extend as 16 bit
+
+            parameters[btn][key] = res;
+            index = index + 2;
+        }
+    }
+    // console.log('parameters', parameters);
+    Alpine.store('pp').pp_parameters = parameters;
 }
 
 function parseSysEx( sysex ){
     console.log('sysex: ', sysex );
-    if ( sysex.data[1] != PP_MIDI_MANUF_ID_1 || sysex.data[2] != PP_MIDI_MANUF_ID_2 || sysex.data[3] != PP_MIDI_PRODUCT_ID ) return null; // Discard all SysEx that's not for this device
-    if ( sysex.data[4] != X_REP ) return null; // Discard all messages that are not a reply
+    if ( !syx_is_pushpush ( sysex.data ) ) return null;
+    if ( !syx_is_repl ( sysex.data ) ) return null;
 
     Alpine.store('pp').pp_loading = false;
     
@@ -115,38 +160,8 @@ function parseSysEx( sysex ){
     switch ( action ) {
         case X_GET:
             console.info("GET");
-            Alpine.store('pp').pp_got_config            = true;
-            Alpine.store('pp').pp_ver_major             = sysex.data[6];
-            Alpine.store('pp').pp_ver_minor             = sysex.data[7];
-            Alpine.store('pp').pp_ver_patch             = sysex.data[8];
-            Alpine.store('pp').pp_model_id              = sysex.data[9];
-            Alpine.store('pp').pp_num_buttons           = sysex.data[10];
-            Alpine.store('pp').pp_keys_sequence_size    = sysex.data[11];
+            assignParams( sysex.data );
 
-            var data = Object.values(sysex.data);
-            data = data.slice( 12, -1 );
-            var parameters = [];
-            var index = 0;
-            for (let btn = 0; btn < Alpine.store('pp').pp_num_buttons; btn++) {
-                // console.log('index: ', index);
-                parameters[btn] = [];
-                // console.log('btn: ', btn);
-                for (let key = 0; key < Alpine.store('pp').pp_keys_sequence_size; key++) {
-                    // console.log('key:', key);
-                    nymb1 = data[index];
-                    nymb2 = data[index+1];
-                    // console.log('nym1', nymb1);
-                    // console.log('nym2', nymb2);
-                    
-                    var res = (data[index] << 7) | data[index+1] ;  // combine the 7 bit chunks to 14 bits in the int
-                    res = res << 2 >> 2 ;  // sign-extend as 16 bit
-                    // console.log('res: ', res);
-                    parameters[btn][key] = res;
-                    index = index + 2;
-                }
-            }
-            console.log('parameters', parameters);
-            Alpine.store('pp').pp_parameters = parameters;
         break;
 
         case X_SET:
@@ -164,4 +179,92 @@ function parseSysEx( sysex ){
             console.error("Action invalid: ", action );
         break;
     }
+}
+
+async function file_import(){
+    let fileHandle;
+    try{
+        const pickerOpts = {
+            types: [
+              {
+                description: "Push Push editor files",
+                accept: {
+                  "*/*": [".pushpush"],
+                },
+              },
+            ],
+            excludeAcceptAllOption: true,
+            multiple: false,
+          };
+        [fileHandle] =  await window.showOpenFilePicker( pickerOpts );
+        const file =  await fileHandle.getFile();
+        const content =  await file.text();
+        const sysex = content.split(" ");
+        try{
+
+            if( sysex[0] != 240 || sysex[sysex.length -1] != 247 ) throw new TypeError("Wrong data format");
+            if ( !syx_is_pushpush ( sysex ) ) throw new TypeError("Data not for Push Push"); 
+            if( Alpine.store('pp').device ){
+                 if ( Alpine.store('pp').pp_model_id != sysex[9] )  throw new TypeError("Data not for the connected Push Push model"); 
+            }
+            if ( !syx_is_repl ( sysex ) ) throw new TypeError("Data not for Push Push config");
+            if( sysex[5] != X_GET )  throw new TypeError("Data not for Push Push config file");
+            if( sysex.length != 2+11+sysex[10]*sysex[11]*2 ) throw new TypeError("Invalid data");
+
+            assignParams( sysex );
+        }
+        catch (e) {
+            console.error(e.message);
+            Alpine.store('pp').pp_import_error = e.message;
+        }
+    }
+    catch (e) {
+        console.error(e.message);
+    }
+}
+
+async function file_export() {
+    try{
+        const options = {
+            types: [
+                {
+                  description: 'Push Push editor files',
+                  accept: {
+                    '*/*': ['.pushpush'],
+                  },
+                },
+              ],
+        };
+        const fileHandle = await window.showSaveFilePicker(options);
+
+        var sysex = [];
+        sysex.push( 240, PP_MIDI_MANUF_ID_1, PP_MIDI_MANUF_ID_2, PP_MIDI_PRODUCT_ID, X_REP, X_GET);
+        sysex = syx_enqueue( sysex );
+        sysex.push(247);
+        sysex = sysex.join(' ');
+
+        const writable = await fileHandle.createWritable();
+        const optWrite = {
+            type: "write",
+            data: sysex
+        }
+        await writable.write( optWrite );
+        await writable.close();
+
+    }
+    catch (e) {
+        console.error(e.message);
+    }
+
+  }
+
+  
+// fileHandle is an instance of FileSystemFileHandle..
+async function writeFile(fileHandle, contents) {
+    // Create a FileSystemWritableFileStream to write to.
+    const writable = await fileHandle.createWritable();
+    // Write the contents of the file to the stream.
+    await writable.write(contents);
+    // Close the file and write the contents to disk.
+    await writable.close();
 }

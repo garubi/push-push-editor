@@ -80,7 +80,7 @@
     text-align:center;
 }
 
-button:disabled,
+button:hover:disabled,
 button[disabled]{
   border: 1px solid #999999;
   background-color: #cccccc;
