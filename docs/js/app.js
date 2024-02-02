@@ -197,7 +197,7 @@ async function openFilePicker(){
             multiple: false,
           };
         [fileHandle] =  await window.showopenFilePicker( pickerOpts );
-         importFile( fileHandle );
+         fileImport( fileHandle );
 
     }
     catch (e) {
@@ -205,7 +205,7 @@ async function openFilePicker(){
     }
 }
 
-async function importFile( fileHandle ){
+async function fileImport( fileHandle ){
     const file =  await fileHandle.getFile();
     const content =  await file.text();
     const sysex = content.split(" ");
@@ -268,7 +268,7 @@ if ("launchQueue" in window) {
     launchQueue.setConsumer(async (launchParams) => {
         console.log("launchQueue");
         for (const fileHandle of launchParams.files) {
-            importFile( fileHandle );
+            fileImport( fileHandle );
         }
     });
 }
