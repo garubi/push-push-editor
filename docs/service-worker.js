@@ -1,4 +1,4 @@
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 const CACHE_NAME = `PushPushEditor-${VERSION}`;
 const PRE_CACHED_RESOURCES = [
   "index.html", 
