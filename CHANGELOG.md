@@ -1,3 +1,6 @@
+# 1.2.1 (2024-02-14)
+ - Fix: missing data from Push Push
+
 # 1.2.0 (2024-02-12)
  - New feature: import/export to file
 
