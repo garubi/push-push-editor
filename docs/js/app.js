@@ -1,4 +1,4 @@
-var editor_version = '1.2.1';
+var editor_version = '1.3.0';
 
 var PP_MIDI_MANUF_ID_1			=	0x37;
 var PP_MIDI_MANUF_ID_2			=	0x72;
@@ -15,6 +15,41 @@ var X_ERROR = 0x7F; // Something went wrong
 
 var X_OK = 0x01;
 var X_FAILED = 0x7F;
+
+let newWorker;
+// navigator.serviceWorker.register("service-worker.js")
+navigator.serviceWorker.register('service-worker.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+        // An updated service worker has appeared in reg.installing!
+        newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+            // Has service worker state changed?
+            switch (newWorker.state) {
+                case 'installed':
+                    // There is a new service worker available, show the notification
+                    if (navigator.serviceWorker.controller) {
+                        showUpdateNotification();
+                    }
+                break;
+                case 'activated':
+                    // The new Service Worker was installed and activated. Hide the notification
+                    hideUpdateNotification()
+                break;
+            }
+        });
+    });
+});
+
+function showUpdateNotification(){
+    Alpine.store('pp').show_update    = true;
+}
+function hideUpdateNotification(){
+    Alpine.store('pp').show_update    = false;
+    location.reload()
+}
+function postSkipWaiting(){
+    newWorker.postMessage( 'SKIP_WAITING' );
+}
 
 document.addEventListener('alpine:init', () => {
     Alpine.store('pp', {
@@ -33,7 +68,8 @@ document.addEventListener('alpine:init', () => {
         pp_stored:              false,
         pp_errors:              false,
         pp_import_error:        false,
-        show_page:           'editor',
+        show_page:              'editor',
+        show_update:            false
     });
 
         

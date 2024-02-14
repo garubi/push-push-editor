@@ -100,7 +100,13 @@ img.shadow{
 h1 img{
   vertical-align: middle;
 }
+
+#updater{
+  background-color: khaki;
+  border: 1px solid gray;
+}
 /* for Alpine.js */
 [x-cloak] {
   display: none !important;
 }
+

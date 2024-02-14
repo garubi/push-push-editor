@@ -1,5 +1,6 @@
-const VERSION = "1.2.1";
-const CACHE_NAME = `PushPushEditor-${VERSION}`;
+const BUILD = "202402141747";
+
+const CACHE_NAME = `PushPushEditor-${BUILD}`;
 const PRE_CACHED_RESOURCES = [
   "index.html", 
   "manifest.json",
@@ -30,7 +31,7 @@ const expectedCaches = [CACHE_NAME]
 // Add a cache-busting query string to the pre-cached resources.
 // This is to avoid loading these resources from the disk cache.
 const PRE_CACHED_RESOURCES_WITH_VERSIONS = PRE_CACHED_RESOURCES.map(path => {
-  return `${path}?v=${VERSION}`;
+  return `${path}?v=${BUILD}`;
 });
 
 // Use the install event to pre-cache all initial resources.
@@ -79,7 +80,7 @@ self.addEventListener('fetch', event => {
     const cache = await caches.open(CACHE_NAME);
 
     // Get the resource from the cache.
-    const versionedUrl = `${event.request.url}?v=${VERSION}`;
+    const versionedUrl = `${event.request.url}?v=${BUILD}`;
     const cachedResponse = await cache.match(versionedUrl);
 
     if (cachedResponse) {
@@ -99,9 +100,10 @@ self.addEventListener('fetch', event => {
   })());
 });
 
+
+/* force update Service Worker */
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
-    console.log('received PUSH SKIP_WAITING');
       self.skipWaiting();
   }
 });
