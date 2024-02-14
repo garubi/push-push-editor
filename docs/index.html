@@ -28,8 +28,6 @@
           <script type="text/javascript" src="js/webmidi.iife.min.js"></script>
           <script type="text/javascript" src="js/app.js"></script>
 
-          <script>navigator.serviceWorker.register("service-worker.js")</script> 
-
     </head>
     <body>
         <div class="container text-center" x-data="appData()" x-init="appInit()">
@@ -39,6 +37,17 @@
                     <img src="images/192x192.png" alt="Push Push icon" height="80px" width="80px"/>
                     Push Push Editor
                 </h1>
+                <div id="updater" x-show="$store.pp.show_update" >
+                    There is a new version of the editor available. Load it now?
+                    <div class="row">
+                        <!-- <div class="six columns"> -->
+                            <button class="button-primary" @click.prevent="postSkipWaiting()" >Load new version</button>
+                        <!-- </div> -->
+                        <!-- <div class="six columns"> -->
+                            <button class="" @click.prevent="$store.pp.show_update = false">Load later</button>
+                        <!-- </div> -->
+                    </div>
+                </div>
                 [<a href="" x-data @click.prevent="$store.pp.show_page == 'help'? $store.pp.show_page = 'editor' : $store.pp.show_page = 'help' " x-text="$store.pp.show_page == 'help'?'Go to editor' : 'Show user guide'" ></a>]
             </div>
             <hr>
