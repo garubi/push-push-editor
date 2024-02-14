@@ -103,7 +103,6 @@ self.addEventListener('fetch', event => {
 
 /* force update Service Worker */
 self.addEventListener('message', (event) => {
-  console.log('postMessage', event);
   if (event.data === 'SKIP_WAITING') {
       self.skipWaiting();
   }
